@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Assistant</title>
+  <style>
+    #talkButton {
+      font-size: 24px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+    }
+    #talkButton:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatInterface">
+    <!-- Your existing chat interface elements -->
+    <button id="talkButton">🎧 Talk to Assistant</button>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const talkButton = document.getElementById('talkButton');
+
+      // Function to convert text to speech
+      function speak(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.speak(utterance);
+      }
+
+      // Function to recognize speech and get user input
+      function recognizeSpeech() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.start();
+
+        recognition.onresult = (event) => {
+          const speechResult = event.results[0][0].transcript;
+          console.log('User said: ', speechResult);
+          handleChatResponse(speechResult);
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event);
+        };
+      }
+
+      // Function to handle chat response
+      async function handleChatResponse(text) {
+        try {
+          const response = await fetch('YOUR_AI_ENDPOINT_URL', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: text })
+          });
+          const data = await response.json();
+          const assistantResponse = data.response; // Adjust according to your AI response format
+          speak(assistantResponse);
+        } catch (error) {
+          console.error('Error:', error);
+          speak('Sorry, I encountered an error.');
+        }
+      }
+
+      // Event listener for the talk button
+      talkButton.addEventListener('click', () => {
+        recognizeSpeech();
+      });
+    });
+  </script>
+</body>
+</html>
